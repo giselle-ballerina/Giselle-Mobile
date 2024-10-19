@@ -47,9 +47,10 @@ class HomePage extends StatelessWidget {
               }
 
               var combinedList = [
-                ...productController.filteredProducts,
+                ...productController.products,
                 ...shopController.filteredShops
               ];
+              combinedList.shuffle();
 
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 15.0),
@@ -100,7 +101,7 @@ class HomePage extends StatelessWidget {
                                 // Get.to(() => ShopPage(shop: shop));
                               },
                               child: Card(
-                                color: Colors.purple[100],
+                                color: Colors.purple[300],
                                 child: Column(
                                   children: [
                                     Expanded(

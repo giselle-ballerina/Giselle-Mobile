@@ -1,17 +1,17 @@
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class SplashScreenController extends GetxController {
+class StartingScreenController extends GetxController {
   var isLoading = true.obs;
   var isFreshBoot = false.obs;
 
   @override
   void onInit() {
     super.onInit();
-    checkFreshBoot();
+    _checkFreshBoot();
   }
 
-  Future<void> checkFreshBoot() async {
+  Future<void> _checkFreshBoot() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final bool? freshBoot = prefs.getBool('fresh_boot');
 

@@ -9,11 +9,11 @@ class ShopController extends GetxController {
   
   @override
   void onInit() {
-    fetchShops();
+    _fetchShops();
     super.onInit();
   }
 
-  void fetchShops() async {
+  void _fetchShops() async {
     try {
       isLoading(true);
       var fetchedShops = await ApiService.fetchShops();
