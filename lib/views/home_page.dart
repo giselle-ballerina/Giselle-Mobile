@@ -47,10 +47,10 @@ class HomePage extends StatelessWidget {
               }
 
               var combinedList = [
-                ...productController.products,
+                ...productController.filteredProducts,
                 ...shopController.filteredShops
               ];
-              combinedList.shuffle();
+              // combinedList.shuffle();
 
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 15.0),
