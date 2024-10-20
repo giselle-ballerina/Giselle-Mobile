@@ -4,6 +4,7 @@ import '../controllers/shop_controller.dart';
 import '../controllers/product_controller.dart';
 import '../models/product.dart' as product_model;
 import '../models/shop.dart' as shop_model;
+import 'product_showcase.dart';
 
 // ignore: use_key_in_widget_constructors
 class HomePage extends StatelessWidget {
@@ -67,7 +68,7 @@ class HomePage extends StatelessWidget {
                           if (item is product_model.Product) {
                             return GestureDetector(
                               onTap: () {
-                                // Get.to(() => ProductPage(product: product));
+                                Get.to(() => ProductShowcasePage(product:item));
                               },
                               child: Card(
                                 clipBehavior: Clip.antiAlias,
