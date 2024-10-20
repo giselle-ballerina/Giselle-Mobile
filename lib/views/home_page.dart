@@ -24,12 +24,12 @@ class HomePage extends StatelessWidget {
             child: TextField(
               onChanged: (value) => value == ""
                   ? {
-                      (productController.updateSearchQuery(value)),
+                      (productController.fetchInitialProducts()),
                       (shopController.updateSearchQuery(value))
                     }
                   : null,
               onSubmitted: (value) => {
-                (productController.updateSearchQuery(value)),
+                (productController.fetchsearchResults(value)),
                 (shopController.updateSearchQuery(value))
               },
               decoration: const InputDecoration(
@@ -47,10 +47,10 @@ class HomePage extends StatelessWidget {
               }
 
               var combinedList = [
-                ...productController.filteredProducts,
+                ...productController.products,
                 ...shopController.filteredShops
               ];
-              // combinedList.shuffle();
+              combinedList.shuffle();
 
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 15.0),
@@ -70,6 +70,7 @@ class HomePage extends StatelessWidget {
                                 // Get.to(() => ProductPage(product: product));
                               },
                               child: Card(
+                                clipBehavior: Clip.antiAlias,
                                 color: Colors.purple[100],
                                 child: Column(
                                   children: [
@@ -101,7 +102,8 @@ class HomePage extends StatelessWidget {
                                 // Get.to(() => ShopPage(shop: shop));
                               },
                               child: Card(
-                                color: Colors.purple[300],
+                                clipBehavior: Clip.antiAlias,
+                                color: Colors.deepPurple[100],
                                 child: Column(
                                   children: [
                                     Expanded(

@@ -1,40 +1,42 @@
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/product.dart';
 import '../services/api_service.dart';
 
 class ProductController extends GetxController {
   var products = <Product>[].obs;
   var isLoading = true.obs;
-  var searchQuery = ''.obs;
 
   @override
   void onInit() {
-    fetchProducts();
     super.onInit();
+    fetchInitialProducts();
   }
 
-  void fetchProducts() async {
+  void fetchInitialProducts() async {
     try {
       isLoading(true);
-      var fetchedProducts = await ApiService.fetchProducts();
-      products.value = fetchedProducts;
+      var interests = await _getSavedInterests();
+      products.value = await ApiService.fetchProducts(interests, 10);
     } finally {
       isLoading(false);
     }
   }
 
-  List<Product> get filteredProducts {
-    if (searchQuery.value.isEmpty) {
-      return products;
-    } else {
-      return products
-          .where((product) => product.productName
-              .toLowerCase()
-              .contains(searchQuery.value.toLowerCase()))
-          .toList();
+  void fetchsearchResults(String keyword) async {
+    try {
+      isLoading(true);
+      products.value = await ApiService.fetchProducts(keyword, 10);
+    } finally {
+      isLoading(false);
     }
   }
-  void updateSearchQuery(String query) {
-    searchQuery.value = query;
+
+  Future<String> _getSavedInterests() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString(
+          'saved_interests',
+        ) ??
+        "";
   }
 }

@@ -6,8 +6,8 @@ import '../models/shop.dart';
 class ApiService {
   static const String apiUrl = 'http://139.59.246.168:9091';
 
-  static Future<List<Product>> fetchProducts() async {
-    final response = await http_client.get(Uri.parse('$apiUrl/items'));
+  static Future<List<Product>> fetchProducts(String keyword, int count) async {
+    final response = await http_client.get(Uri.parse('$apiUrl/recommendedItems?query=$keyword&top_k=$count'));
 
     if (response.statusCode == 200) {
       List<dynamic> data = json.decode(response.body);
