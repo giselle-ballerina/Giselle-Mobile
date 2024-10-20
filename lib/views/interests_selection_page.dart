@@ -55,10 +55,11 @@ class InterestSelectionPage extends StatelessWidget {
                       }),
                 ),
                 Obx(() => FilledButton(
-                      onPressed: interestController.selectedInterests.length > interestController.interests.length / 5
+                      onPressed: interestController.selectedInterests.length >
+                              interestController.interests.length / 5
                           ? () {
                               interestController.saveInterests();
-                              Get.off(HomePage());
+                              Get.off(() => HomePage());
                             }
                           : null,
                       child: const Text("Let's Go!"),
