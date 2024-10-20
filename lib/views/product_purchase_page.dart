@@ -1,34 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../controllers/product_purchase_controller.dart';
 import '../models/product.dart';
 
-
-class ProductPurchasePage extends StatefulWidget {
+class ProductPurchasePage extends StatelessWidget {
   final Product product;
 
   ProductPurchasePage({required this.product});
 
   @override
-  _ProductPurchasePageState createState() => _ProductPurchasePageState();
-}
-
-class _ProductPurchasePageState extends State<ProductPurchasePage> {
-  Varient? selectedVariant;
-  int selectedQuantity = 1; // Default quantity set to 1
-
-  @override
-  void initState() {
-    super.initState();
-    // Default to the first variant
-    selectedVariant = widget.product.varients.isNotEmpty ? widget.product.varients[0] : null;
-  }
-
-  @override
   Widget build(BuildContext context) {
+    // Initialize the controller with the product
+    final ProductPurchaseController controller = Get.put(ProductPurchaseController(product));
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Purchase ${widget.product.productName}'),
+        title: Text('Purchase ${product.productName}'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -42,16 +30,16 @@ class _ProductPurchasePageState extends State<ProductPurchasePage> {
             _buildProductInfo(),
             SizedBox(height: 24),
             // Variant Dropdown
-            _buildVariantDropdown(),
+            _buildVariantDropdown(controller),
             SizedBox(height: 24),
             // Quantity Selector
-            _buildQuantitySelector(),
+            _buildQuantitySelector(controller),
             SizedBox(height: 24),
             // Total Price Section
-            _buildPriceSection(),
+            _buildPriceSection(controller),
             SizedBox(height: 32),
             // Purchase Button
-            _buildPurchaseButton(),
+            _buildPurchaseButton(controller),
           ],
         ),
       ),
@@ -67,7 +55,7 @@ class _ProductPurchasePageState extends State<ProductPurchasePage> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
           image: DecorationImage(
-            image: NetworkImage(widget.product.images.first.url),
+            image: NetworkImage(product.images.first.url),
             fit: BoxFit.cover,
           ),
         ),
@@ -81,7 +69,7 @@ class _ProductPurchasePageState extends State<ProductPurchasePage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          widget.product.productName,
+          product.productName,
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
@@ -89,7 +77,7 @@ class _ProductPurchasePageState extends State<ProductPurchasePage> {
         ),
         SizedBox(height: 8),
         Text(
-          "Brand: ${widget.product.brand}",
+          "Brand: ${product.brand}",
           style: TextStyle(fontSize: 16, color: Colors.grey[700]),
         ),
       ],
@@ -97,7 +85,7 @@ class _ProductPurchasePageState extends State<ProductPurchasePage> {
   }
 
   // Widget to display dropdown for variant selection
-  Widget _buildVariantDropdown() {
+  Widget _buildVariantDropdown(ProductPurchaseController controller) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -109,31 +97,29 @@ class _ProductPurchasePageState extends State<ProductPurchasePage> {
           ),
         ),
         SizedBox(height: 8),
-        DropdownButton<Varient>(
-          value: selectedVariant,
-          onChanged: (Varient? newValue) {
-            setState(() {
-              selectedVariant = newValue;
-              // Reset quantity to 1 when the variant changes
-              selectedQuantity = 1;
-            });
-          },
-          items: widget.product.varients.map<DropdownMenuItem<Varient>>((Varient variant) {
-            return DropdownMenuItem<Varient>(
-              value: variant,
-              child: Text(
-                "${variant.color} - ${variant.size} (Available: ${variant.qty})",
-                style: TextStyle(fontSize: 16),
-              ),
-            );
-          }).toList(),
-        ),
+        Obx(() => DropdownButton<Varient>(
+              value: controller.selectedVariant.value,
+              onChanged: (Varient? newValue) {
+                if (newValue != null) {
+                  controller.updateSelectedVariant(newValue);
+                }
+              },
+              items: product.varients.map<DropdownMenuItem<Varient>>((Varient variant) {
+                return DropdownMenuItem<Varient>(
+                  value: variant,
+                  child: Text(
+                    "${variant.color} - ${variant.size} (Available: ${variant.qty})",
+                    style: TextStyle(fontSize: 16),
+                  ),
+                );
+              }).toList(),
+            )),
       ],
     );
   }
 
   // Widget to display the quantity selection
-  Widget _buildQuantitySelector() {
+  Widget _buildQuantitySelector(ProductPurchaseController controller) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -150,27 +136,21 @@ class _ProductPurchasePageState extends State<ProductPurchasePage> {
           children: [
             // Decrement button
             IconButton(
-              onPressed: selectedQuantity > 1 ? () {
-                setState(() {
-                  selectedQuantity--;
-                });
-              } : null,
+              onPressed: () {
+                controller.decrementQuantity();
+              },
               icon: Icon(Icons.remove),
             ),
             // Quantity display
-            Text(
-              '$selectedQuantity',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
+            Obx(() => Text(
+                  '${controller.selectedQuantity.value}',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                )),
             // Increment button
             IconButton(
-              onPressed: selectedVariant != null && selectedQuantity < selectedVariant!.qty
-                  ? () {
-                      setState(() {
-                        selectedQuantity++;
-                      });
-                    }
-                  : null,
+              onPressed: () {
+                controller.incrementQuantity();
+              },
               icon: Icon(Icons.add),
             ),
           ],
@@ -180,55 +160,57 @@ class _ProductPurchasePageState extends State<ProductPurchasePage> {
   }
 
   // Widget to display the price section
-  Widget _buildPriceSection() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          'Total Price',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        Text(
-          '\$${(widget.product.price * selectedQuantity).toStringAsFixed(2)}',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.green[700],
-          ),
-        ),
-      ],
-    );
+  Widget _buildPriceSection(ProductPurchaseController controller) {
+    return Obx(() => Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Total Price',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              '\$${controller.getTotalPrice().toStringAsFixed(2)}',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.green[700],
+              ),
+            ),
+          ],
+        ));
   }
 
   // Widget for the purchase button
-  Widget _buildPurchaseButton() {
+  Widget _buildPurchaseButton(ProductPurchaseController controller) {
     return Center(
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          padding: EdgeInsets.symmetric(vertical: 16, horizontal: 32),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          backgroundColor: Colors.blueAccent,
-        ),
-        onPressed: selectedVariant == null ? null : () {
-          // Logic for confirming the purchase
-          Get.snackbar(
-            'Purchase Confirmed',
-            'You have successfully purchased $selectedQuantity x ${widget.product.productName} (${selectedVariant?.color} - ${selectedVariant?.size})!',
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.green[100],
-            colorText: Colors.black87,
-          );
-        },
-        child: Text(
-          'Confirm Purchase',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-      ),
+      child: Obx(() => ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              padding: EdgeInsets.symmetric(vertical: 16, horizontal: 32),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              backgroundColor: Colors.blueAccent,
+            ),
+            onPressed: controller.selectedVariant.value == null
+                ? null
+                : () {
+                    // Logic for confirming the purchase
+                    Get.snackbar(
+                      'Purchase Confirmed',
+                      'You have successfully purchased ${controller.selectedQuantity.value} x ${product.productName} (${controller.selectedVariant.value?.color} - ${controller.selectedVariant.value?.size})!',
+                      snackPosition: SnackPosition.BOTTOM,
+                      backgroundColor: Colors.green[100],
+                      colorText: Colors.black87,
+                    );
+                  },
+            child: Text(
+              'Confirm Purchase',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          )),
     );
   }
 }
