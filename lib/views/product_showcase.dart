@@ -11,6 +11,7 @@ class ProductShowcasePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[100],
       appBar: AppBar(
         title: Text(product.productName),
         centerTitle: true,

@@ -11,9 +11,11 @@ class ProductPurchasePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ProductPurchaseController controller = Get.put(ProductPurchaseController(product));
+    final ProductPurchaseController controller =
+        Get.put(ProductPurchaseController(product));
 
     return Scaffold(
+      backgroundColor: Colors.grey[100],
       appBar: AppBar(
         title: Text('Purchase ${product.productName}'),
       ),
@@ -109,8 +111,10 @@ class ProductPurchasePage extends StatelessWidget {
                     controller.updateSelectedVariant(newValue);
                   }
                 },
-                items: product.varients.map<DropdownMenuItem<Varient>>((Varient variant) {
-                  String processedColor = 'FF' + variant.color.replaceFirst('#', '');
+                items: product.varients
+                    .map<DropdownMenuItem<Varient>>((Varient variant) {
+                  String processedColor =
+                      'FF' + variant.color.replaceFirst('#', '');
                   Color color = Color(int.parse(processedColor, radix: 16));
 
                   return DropdownMenuItem<Varient>(
@@ -216,15 +220,18 @@ class ProductPurchasePage extends StatelessWidget {
                 : () {
                     Get.snackbar(
                       'Purchase Confirmed',
-                      'You have successfully purchased ${controller.selectedQuantity.value} x ${product.productName} (${controller.selectedVariant.value?.color} - ${controller.selectedVariant.value?.size})!',
-                      snackPosition: SnackPosition.BOTTOM,
+                      'You have successfully purchased ${controller.selectedQuantity.value} x ${product.productName} (${controller.selectedVariant.value?.size})',
+                      snackPosition: SnackPosition.TOP,
                       backgroundColor: Colors.green[100],
                       colorText: Colors.black87,
                     );
                   },
             child: Text(
               'Confirm Purchase',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+              style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white),
             ),
           )),
     );
