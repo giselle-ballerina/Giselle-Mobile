@@ -14,8 +14,8 @@ class ProductPurchasePage extends StatefulWidget {
 }
 
 class _ProductPurchasePageState extends State<ProductPurchasePage> {
-  // Track the selected variant
   Varient? selectedVariant;
+  int selectedQuantity = 1; // Default quantity set to 1
 
   @override
   void initState() {
@@ -43,6 +43,9 @@ class _ProductPurchasePageState extends State<ProductPurchasePage> {
             SizedBox(height: 24),
             // Variant Dropdown
             _buildVariantDropdown(),
+            SizedBox(height: 24),
+            // Quantity Selector
+            _buildQuantitySelector(),
             SizedBox(height: 24),
             // Total Price Section
             _buildPriceSection(),
@@ -111,17 +114,66 @@ class _ProductPurchasePageState extends State<ProductPurchasePage> {
           onChanged: (Varient? newValue) {
             setState(() {
               selectedVariant = newValue;
+              // Reset quantity to 1 when the variant changes
+              selectedQuantity = 1;
             });
           },
           items: widget.product.varients.map<DropdownMenuItem<Varient>>((Varient variant) {
             return DropdownMenuItem<Varient>(
               value: variant,
               child: Text(
-                "${variant.color} - ${variant.size} (Qty: ${variant.qty})",
+                "${variant.color} - ${variant.size} (Available: ${variant.qty})",
                 style: TextStyle(fontSize: 16),
               ),
             );
           }).toList(),
+        ),
+      ],
+    );
+  }
+
+  // Widget to display the quantity selection
+  Widget _buildQuantitySelector() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Select Quantity",
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            // Decrement button
+            IconButton(
+              onPressed: selectedQuantity > 1 ? () {
+                setState(() {
+                  selectedQuantity--;
+                });
+              } : null,
+              icon: Icon(Icons.remove),
+            ),
+            // Quantity display
+            Text(
+              '$selectedQuantity',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            // Increment button
+            IconButton(
+              onPressed: selectedVariant != null && selectedQuantity < selectedVariant!.qty
+                  ? () {
+                      setState(() {
+                        selectedQuantity++;
+                      });
+                    }
+                  : null,
+              icon: Icon(Icons.add),
+            ),
+          ],
         ),
       ],
     );
@@ -140,7 +192,7 @@ class _ProductPurchasePageState extends State<ProductPurchasePage> {
           ),
         ),
         Text(
-          '\$${widget.product.price.toStringAsFixed(2)}',
+          '\$${(widget.product.price * selectedQuantity).toStringAsFixed(2)}',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -166,7 +218,7 @@ class _ProductPurchasePageState extends State<ProductPurchasePage> {
           // Logic for confirming the purchase
           Get.snackbar(
             'Purchase Confirmed',
-            'You have successfully purchased ${widget.product.productName} (${selectedVariant?.color} - ${selectedVariant?.size})!',
+            'You have successfully purchased $selectedQuantity x ${widget.product.productName} (${selectedVariant?.color} - ${selectedVariant?.size})!',
             snackPosition: SnackPosition.BOTTOM,
             backgroundColor: Colors.green[100],
             colorText: Colors.black87,
